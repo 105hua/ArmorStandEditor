@@ -9,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -37,25 +36,30 @@ public class SizeMenu extends ASEHolder {
         menuInv = Bukkit.createInventory(pe.getManager().getSizeMenuHolder(), 27, name);
     }
 
-    //PRESET NAMES
-    final String SCALE1 = plugin.getLang().getMessage("scale1").replace("§6", "§2§n");
-    final String SCALE2 = plugin.getLang().getMessage("scale2").replace("§6", "§2§n");
-    final String SCALE3 = plugin.getLang().getMessage("scale3").replace("§6", "§2§n");
-    final String SCALE4 = plugin.getLang().getMessage("scale4").replace("§6", "§2§n");
-    final String SCALE5 = plugin.getLang().getMessage("scale5").replace("§6", "§2§n");
-    final String SCALE6 = plugin.getLang().getMessage("scale6").replace("§6", "§2§n");
-    final String SCALE7 = plugin.getLang().getMessage("scale7").replace("§6", "§2§n");
-    final String SCALE8 = plugin.getLang().getMessage("scale8").replace("§6", "§2§n");
-    final String SCALE9 = plugin.getLang().getMessage("scale9").replace("§6", "§2§n");
-    final String SCALE10 = plugin.getLang().getMessage("scale10").replace("§6", "§2§n");
-    final String SCALEPLUS12 = plugin.getLang().getMessage("scaleadd12").replace("§6", "§2§n");
-    final String SCALEMINUS12 = plugin.getLang().getMessage("scaleremove12").replace("§6", "§2§n");
-    final String SCALEPLUS110 = plugin.getLang().getMessage("scaleadd110").replace("§6", "§2§n");
-    final String SCALEMINUS110 = plugin.getLang().getMessage("scaleremove110").replace("§6", "§2§n");
+    //Replace Values.
+    final String VALUETOREPLACE = "§" + plugin.getLang().getFormat("info"); //VALUE WE DONT WANT: §6
+    final String VALUEWEWANT = "§" +plugin.getLang().getFormat("iconname").substring(0, 1) +
+            "§" + plugin.getLang().getFormat("iconname").substring(1); //VALUE WE WANT IS: §2§nScale = 9
+
+    //Preset Strings.
+    final String SCALE1 = plugin.getLang().getMessage("scale1").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE2 = plugin.getLang().getMessage("scale2").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE3 = plugin.getLang().getMessage("scale3").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE4 = plugin.getLang().getMessage("scale4").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE5 = plugin.getLang().getMessage("scale5").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE6 = plugin.getLang().getMessage("scale6").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE7 = plugin.getLang().getMessage("scale7").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE8 = plugin.getLang().getMessage("scale8").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE9 = plugin.getLang().getMessage("scale9").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALE10 = plugin.getLang().getMessage("scale10").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALEPLUS12 = plugin.getLang().getMessage("scaleadd12").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALEMINUS12 = plugin.getLang().getMessage("scaleremove12").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALEPLUS110 = plugin.getLang().getMessage("scaleadd110").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String SCALEMINUS110 = plugin.getLang().getMessage("scaleremove110").replace(VALUETOREPLACE, VALUEWEWANT);
 
     //Menu Stuff
-    final String BACKTOMENU = plugin.getLang().getMessage("backtomenu").replace("§6", "§2§n");
-    final String RESET = plugin.getLang().getMessage("reset").replace("§6", "§2§n");
+    final String BACKTOMENU = plugin.getLang().getMessage("backtomenu").replace(VALUETOREPLACE, VALUEWEWANT);
+    final String RESET = plugin.getLang().getMessage("reset").replace(VALUETOREPLACE, VALUEWEWANT);
 
 
     private void fillInventory() {
@@ -174,64 +178,53 @@ public class SizeMenu extends ASEHolder {
 
     private void setArmorStandScale(Player player, String itemName, double scaleValue) {
         debug.log("Setting the Scale of the ArmorStand");
-        double currentScaleValue;
+        double currentScaleValue = 0;
         double newScaleValue;
 
-        for (Entity theArmorStand : player.getNearbyEntities(1, 1, 1)) {
-            if (theArmorStand instanceof ArmorStand as) {
+        if(!as.isValid()) return;
 
-                // Permission Check
-                if (!player.hasPermission("asedit.togglesize")) return;
+        if(!player.hasPermission("asedit.togglesize")) return;
 
-                // Can be overwritten
-                currentScaleValue = 0;
+        // Basically go from 0 directly to ItemSize
+        if (itemName.equals(SCALE1) || itemName.equals(SCALE2) || itemName.equals(SCALE3)
+                || itemName.equals(SCALE4) || itemName.equals(SCALE5) || itemName.equals(SCALE6)
+                || itemName.equals(SCALE7) || itemName.equals(SCALE8) || itemName.equals(SCALE9)
+                || itemName.equals(SCALE10)) {
+            newScaleValue = currentScaleValue + scaleValue;
+            debug.log("Result of the scale Calculation: " + newScaleValue);
 
-                // Basically go from 0 directly to ItemSize
-                if (itemName.equals(SCALE1) || itemName.equals(SCALE2) || itemName.equals(SCALE3)
-                    || itemName.equals(SCALE4) || itemName.equals(SCALE5) || itemName.equals(SCALE6)
-                    || itemName.equals(SCALE7) || itemName.equals(SCALE8) || itemName.equals(SCALE9)
-                    || itemName.equals(SCALE10)) {
-                    newScaleValue = currentScaleValue + scaleValue;
-                    debug.log("Result of the scale Calculation: " + newScaleValue);
-                    if (newScaleValue > plugin.getMaxScaleValue()) {
-                        pe.getPlayer().sendMessage(plugin.getLang().getMessage("scalemaxwarn", "warn"));
-                        return;
-                    } else if (newScaleValue < plugin.getMinScaleValue()) {
-                        pe.getPlayer().sendMessage(plugin.getLang().getMessage("scaleminwarn", "warn"));
-                        return;
-                    } else {
-                        as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
-                    }
-                    // Add either 0.1 or 0.5 to the current
-                    } else if (itemName.equals(SCALEPLUS12) || itemName.equals(SCALEPLUS110)) {
-                    currentScaleValue = as.getAttribute(Attribute.SCALE).getBaseValue();
-                    newScaleValue = currentScaleValue + scaleValue; // Add for increments
-                    debug.log("Result of the scale Calculation: " + newScaleValue);
-                    if (newScaleValue > plugin.getMaxScaleValue()) {
-                        pe.getPlayer().sendMessage(plugin.getLang().getMessage("scalemaxwarn", "warn"));
-                        return;
-                    }
-                    as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
-                    //Subtract either 0.1 or 0.5 from the current
-                } else if (itemName.equals(SCALEMINUS12) || itemName.equals(SCALEMINUS110)) {
-                    currentScaleValue = as.getAttribute(Attribute.SCALE).getBaseValue();
-                    newScaleValue = currentScaleValue - scaleValue; // Subtract for decrements
-                    debug.log("Result of the scale Calculation: " + newScaleValue);
-                    if (newScaleValue < plugin.getMinScaleValue()) {
-                        pe.getPlayer().sendMessage(plugin.getLang().getMessage("scaleminwarn", "warn"));
-                        return;
-                    }
-                    as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
-                } else if (itemName.equals(RESET)) { // Set it back to 1
-                    newScaleValue = 1;
-                    as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
-                }
-
-
+            if (newScaleValue > plugin.getMaxScaleValue()) {
+                pe.getPlayer().sendMessage(plugin.getLang().getMessage("scalemaxwarn", "warn"));
+            } else if (newScaleValue < plugin.getMinScaleValue()) {
+                pe.getPlayer().sendMessage(plugin.getLang().getMessage("scaleminwarn", "warn"));
+            } else {
+                as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
             }
+
+            // Add either 0.1 or 0.5 to the current
+        } else if (itemName.equals(SCALEPLUS12) || itemName.equals(SCALEPLUS110)) {
+            currentScaleValue = as.getAttribute(Attribute.SCALE).getBaseValue(); //Get the current Value
+            newScaleValue = currentScaleValue + scaleValue; // Add for increments
+            debug.log("Result of the scale Calculation: " + newScaleValue);
+            if (newScaleValue > plugin.getMaxScaleValue()) {
+                pe.getPlayer().sendMessage(plugin.getLang().getMessage("scalemaxwarn", "warn"));
+                return;
+            }
+            as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
+            //Subtract either 0.1 or 0.5 from the current
+        } else if (itemName.equals(SCALEMINUS12) || itemName.equals(SCALEMINUS110)) {
+            currentScaleValue = as.getAttribute(Attribute.SCALE).getBaseValue();
+            newScaleValue = currentScaleValue - scaleValue; // Subtract for decrements
+            debug.log("Result of the scale Calculation: " + newScaleValue);
+            if (newScaleValue < plugin.getMinScaleValue()) {
+                pe.getPlayer().sendMessage(plugin.getLang().getMessage("scaleminwarn", "warn"));
+                return;
+            }
+            as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
+        } else if (itemName.equals(RESET)) { // Set it back to 1
+            newScaleValue = 1.0;
+            as.getAttribute(Attribute.SCALE).setBaseValue(newScaleValue);
         }
-
-
     }
 
     public void openMenu() {

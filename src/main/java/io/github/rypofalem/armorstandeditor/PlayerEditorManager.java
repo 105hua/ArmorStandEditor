@@ -27,6 +27,7 @@ import io.github.rypofalem.armorstandeditor.api.ItemFrameGlowEvent;
 import io.github.rypofalem.armorstandeditor.menu.ASEHolder;
 import io.github.rypofalem.armorstandeditor.protections.*;
 
+import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -38,6 +39,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.Team;
@@ -112,7 +114,7 @@ public class PlayerEditorManager implements Listener {
             if (canEdit(player, as))
                 applyLeftTool(player, as);
         } else if (event.getEntity() instanceof ItemFrame) {
-            debug.log(" Player '" + player.getDisplayName() + "' has rght clicked on an ItemFrame");
+            debug.log(" Player '" + player.getDisplayName() + "' has right clicked on an ItemFrame");
             ItemFrame itemf = (ItemFrame) event.getEntity();
             getPlayerEditor(player.getUniqueId()).cancelOpenMenu();
             event.setCancelled(true);
@@ -391,7 +393,7 @@ public class PlayerEditorManager implements Listener {
         if (!player.hasPermission("asedit.basic")) return;
         if (plugin.enablePerWorld && (!plugin.allowedWorldList.contains(player.getWorld().getName()))) {
             //Implementation for Per World ASE
-                getPlayerEditor(player.getUniqueId()).sendMessage("notincorrectworld", "warn");
+            getPlayerEditor(player.getUniqueId()).sendMessage("notincorrectworld", "warn");
             e.setCancelled(true);
             return;
         }
@@ -416,21 +418,26 @@ public class PlayerEditorManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     void onPlayerMenuSelect(InventoryClickEvent e) {
-        if (e.getInventory().getHolder() == null) return;
-        if (!(e.getInventory().getHolder() instanceof ASEHolder)) return;
-        if (e.getInventory().getHolder() == menuHolder) {
+        final InventoryHolder holder = PaperLib.getHolder(e.getInventory(), false).getHolder();
+
+        if (holder == null) return;
+        if (!(holder instanceof ASEHolder)) return;
+        if (holder == menuHolder) {
             e.setCancelled(true);
             ItemStack item = e.getCurrentItem();
             if (item != null && item.hasItemMeta()) {
                 Player player = (Player) e.getWhoClicked();
                 String command = item.getItemMeta().getPersistentDataContainer().get(plugin.getIconKey(), PersistentDataType.STRING);
-                if (command != null) {
-                    player.performCommand(command);
+                if (command.equals("ase ") || command == null){ // Therefore user has clicked a black pane
+                    getPlayerEditor(player.getUniqueId()).sendMessage("blackGlassClick","");
                     return;
+                } else if (command != null) {
+                     player.performCommand(command);
+                     return;
                 }
             }
         }
-        if (e.getInventory().getHolder() == equipmentHolder) {
+        if (holder == equipmentHolder) {
             ItemStack item = e.getCurrentItem();
             if (item == null) return;
             if (item.getItemMeta() == null) return;
@@ -439,7 +446,7 @@ public class PlayerEditorManager implements Listener {
             }
         }
 
-        if (e.getInventory().getHolder() == presetHolder) {
+        if (holder == presetHolder) {
             e.setCancelled(true);
             ItemStack item = e.getCurrentItem();
             if (item != null && item.hasItemMeta()) {
@@ -450,7 +457,7 @@ public class PlayerEditorManager implements Listener {
             }
         }
 
-        if (e.getInventory().getHolder() == sizeMenuHolder) {
+        if (holder == sizeMenuHolder) {
             e.setCancelled(true);
             ItemStack item = e.getCurrentItem();
             if (item != null && item.hasItemMeta()) {
@@ -465,9 +472,11 @@ public class PlayerEditorManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onPlayerMenuClose(InventoryCloseEvent e) {
-        if (e.getInventory().getHolder() == null) return;
-        if (!(e.getInventory().getHolder() instanceof ASEHolder)) return;
-        if (e.getInventory().getHolder() == equipmentHolder) {
+        final InventoryHolder holder = PaperLib.getHolder(e.getInventory(), false).getHolder();
+
+        if (holder == null) return;
+        if (!(holder instanceof ASEHolder)) return;
+        if (holder == equipmentHolder) {
             PlayerEditor pe = players.get(e.getPlayer().getUniqueId());
             pe.equipMenu.equipArmorstand();
 
