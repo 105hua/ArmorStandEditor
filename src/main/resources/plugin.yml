@@ -1,7 +1,7 @@
 name: ArmorStandEditor
 main: io.github.rypofalem.armorstandeditor.ArmorStandEditorPlugin
-version: 1.21.4-48.1
-api-version: "1.17"
+version: 1.21.8-48.2
+api-version: "1.21"
 folia-supported: true
 website: https://www.spigotmc.org/resources/94503/
 author: Wolfstorm
